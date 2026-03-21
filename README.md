@@ -1,8 +1,8 @@
-# Trillian
+# Tril
 
 **Convert any codebase into plain English that an LLM can execute.**
 
-Named after the universal translator fish from *The Hitchhiker's Guide to the Galaxy*.
+Inspired by the Babel fish from *The Hitchhiker's Guide to the Galaxy*. Website: [tril.cc](https://tril.cc)
 
 ---
 
@@ -21,7 +21,7 @@ function celsiusToFahrenheit(value) {
 }
 ```
 
-Trillian takes every function in a repository and replaces the dry code with clear, simple English. Not a comment on the code. Not documentation. The code itself gets replaced. As if one person were explaining to another over the phone what should happen.
+Tril takes every function in a repository and replaces the dry code with clear, simple English. Not a comment on the code. Not documentation. The code itself gets replaced. As if one person were explaining to another over the phone what should happen.
 
 What happens next is easy to guess. Function by function, like planks in the Ship of Theseus, the entire repository transforms into a possibly unexciting but coherent and detailed story of state changes and functions. After each micro-replacement — automated tests. The application must work after every iteration. The ship's buoyancy must not change after repair.
 
@@ -56,7 +56,7 @@ And then this markdown **runs**. `tril run` starts an HTTP server. When a reques
 
 With the simple Celsius-to-Fahrenheit function, the AI nailed it. Tests confirmed:
 
-| Test | Original (JS) | Trillian (LLM) | Match |
+| Test | Original (JS) | Tril (LLM) | Match |
 |------|---------------|-----------------|-------|
 | 100°C → °F | `212` | `212` | YES |
 | 32°F → °C | `0` | `0` | YES |
@@ -70,9 +70,9 @@ They exist out of necessity. Methodical people invented them so machines could p
 
 We had to invent interfaces because machines couldn't understand our intentions. So we gritted our teeth and invented formal languages to translate thoughts into instructions, into procedures, so silicon could execute them with bit-level precision. High-level languages were a joy for those who'd punched cards, but fundamentally they haven't gone far: JavaScript, Python, Rust — they're all crutches. Bridges across the gap between "I want" and "thank you for the result."
 
-Code is compressed human language with all ambiguity removed. Trillian does the reverse: decompresses it, pries open the jaws of determinism, extracts the concentrate, and explains in plain language what's happening. No need to know about that semicolon that haunted you in college, without which the compiler would dump a hundred screens of errors. It turns out LLMs can execute this text *precisely enough*, like an interpreter executing code.
+Code is compressed human language with all ambiguity removed. Tril does the reverse: decompresses it, pries open the jaws of determinism, extracts the concentrate, and explains in plain language what's happening. No need to know about that semicolon that haunted you in college, without which the compiler would dump a hundred screens of errors. It turns out LLMs can execute this text *precisely enough*, like an interpreter executing code.
 
-A pull request in a Trillian repository isn't an encrypted diff in syntax described in cryptic books with black-and-white animals on the cover. It's an editorial correction of ordinary text, the kind normal people think in. "Code review" becomes just "review": *"It says 'multiply by 9/5' — maybe 'multiply by 1.8' would be clearer?"* The barrier between those who write software and those who use it begins to dissolve.
+A pull request in a Tril repository isn't an encrypted diff in syntax described in cryptic books with black-and-white animals on the cover. It's an editorial correction of ordinary text, the kind normal people think in. "Code review" becomes just "review": *"It says 'multiply by 9/5' — maybe 'multiply by 1.8' would be clearer?"* The barrier between those who write software and those who use it begins to dissolve.
 
 The ship sails.
 

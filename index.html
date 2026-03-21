@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tril — Code Is Just Compressed Language</title>
+  <meta name="description" content="Convert any codebase into plain English that an LLM can execute. Ship of Theseus for code.">
+  <link rel="canonical" href="https://tril.cc">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daub-ui@latest/daub.css">
+  <script src="https://cdn.jsdelivr.net/npm/daub-ui@latest/daub.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #0a0a0f;
+      --color-surface: #12121a;
+      --color-surface-2: #1a1a26;
+      --color-text: #e8e8ed;
+      --color-text-muted: #8888a0;
+      --color-accent: #6ee7b7;
+      --color-accent-dim: rgba(110, 231, 183, 0.15);
+      --color-code-bg: #0d1117;
+      --color-border: rgba(255,255,255,0.06);
+      --font-display: 'IBM Plex Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 2rem;
+      --space-lg: 4rem;
+      --space-xl: 6rem;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-display);
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Layout ---------- */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 var(--space-md);
+    }
+
+    section {
+      padding: var(--space-xl) 0;
+    }
+
+    /* ---------- Nav ---------- */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-sm) 0;
+    }
+    .site-nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-nav__brand {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--color-accent);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .site-nav__links {
+      display: flex; gap: var(--space-sm); align-items: center;
+    }
+    .site-nav__links a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .site-nav__links a:hover { color: var(--color-text); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%; left: -20%;
+      width: 140%; height: 140%;
+      background: radial-gradient(ellipse at 30% 50%, rgba(110, 231, 183, 0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 30%, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero .container { position: relative; z-index: 1; }
+    .hero__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+      opacity: 0;
+      animation: fadeUp 0.8s ease-out 0.2s forwards;
+    }
+    .hero__title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-md);
+      opacity: 0;
+      animation: fadeUp 0.8s ease-out 0.4s forwards;
+    }
+    .hero__title em {
+      font-style: normal;
+      color: var(--color-accent);
+    }
+    .hero__subtitle {
+      font-size: 1.25rem;
+      color: var(--color-text-muted);
+      max-width: 560px;
+      margin-bottom: var(--space-lg);
+      opacity: 0;
+      animation: fadeUp 0.8s ease-out 0.6s forwards;
+    }
+    .hero__cta {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s ease-out 0.8s forwards;
+    }
+
+    /* ---------- Code comparison ---------- */
+    .comparison {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .comparison__header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+    .comparison__header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-xs);
+    }
+    .comparison__header p {
+      color: var(--color-text-muted);
+      font-size: 1.0625rem;
+    }
+    .comparison__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    @media (max-width: 768px) {
+      .comparison__grid { grid-template-columns: 1fr; }
+    }
+    .comparison__pane {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    .comparison__pane-header {
+      padding: var(--space-sm) var(--space-md);
+      background: var(--color-surface-2);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .comparison__pane-header .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .comparison__pane-header .dot--red { background: #ff5f57; }
+    .comparison__pane-header .dot--yellow { background: #febc2e; }
+    .comparison__pane-header .dot--green { background: #28c840; }
+    .comparison__pane-header span {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-left: auto;
+    }
+    .comparison__code {
+      padding: var(--space-md);
+      background: var(--color-code-bg);
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      min-height: 280px;
+    }
+    .comparison__code .kw { color: #c678dd; }
+    .comparison__code .fn { color: #61afef; }
+    .comparison__code .str { color: #98c379; }
+    .comparison__code .num { color: #d19a66; }
+    .comparison__code .cmt { color: #5c6370; }
+    .comparison__code .h2 { color: var(--color-accent); font-weight: 600; }
+    .comparison__code .bold { color: #e5c07b; font-weight: 600; }
+    .comparison__code .muted { color: var(--color-text-muted); }
+
+    /* ---------- Arrow between panes ---------- */
+    .comparison__arrow {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      color: var(--color-accent);
+      font-size: 1.5rem;
+      padding: var(--space-sm) 0;
+    }
+    @media (max-width: 768px) {
+      .comparison__arrow { display: flex; }
+    }
+
+    /* ---------- Results table ---------- */
+    .results {
+      background: var(--color-bg);
+    }
+    .results__header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+    .results__header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-xs);
+    }
+    .results__header p {
+      color: var(--color-text-muted);
+      font-size: 1.0625rem;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+    .results-table th {
+      text-align: left;
+      padding: var(--space-sm);
+      border-bottom: 2px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .results-table td {
+      padding: var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .results-table .match {
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    /* ---------- How it works ---------- */
+    .how {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .how__header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+    .how__header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-xs);
+    }
+    .how__header p {
+      color: var(--color-text-muted);
+      font-size: 1.0625rem;
+    }
+    .how__steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    @media (max-width: 768px) {
+      .how__steps { grid-template-columns: 1fr; }
+    }
+    .how__step {
+      padding: var(--space-md);
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: border-color 0.2s;
+    }
+    .how__step:hover {
+      border-color: rgba(110, 231, 183, 0.2);
+    }
+    .how__step-number {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-accent);
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+    .how__step h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+    .how__step p {
+      color: var(--color-text-muted);
+      font-size: 0.9375rem;
+    }
+    .how__step code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      background: var(--color-surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-accent);
+    }
+
+    /* ---------- Philosophy ---------- */
+    .philosophy {
+      background: var(--color-bg);
+    }
+    .philosophy__content {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .philosophy__content h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-md);
+      text-align: center;
+    }
+    .philosophy__content blockquote {
+      border-left: 3px solid var(--color-accent);
+      padding-left: var(--space-md);
+      margin: var(--space-md) 0;
+      color: var(--color-text-muted);
+      font-size: 1.125rem;
+      font-style: italic;
+      line-height: 1.8;
+    }
+    .philosophy__content p {
+      color: var(--color-text-muted);
+      font-size: 1.0625rem;
+      margin-bottom: var(--space-sm);
+    }
+    .philosophy__content p strong {
+      color: var(--color-text);
+    }
+
+    /* ---------- CTA ---------- */
+    .final-cta {
+      text-align: center;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+    }
+    .final-cta h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-xs);
+    }
+    .final-cta p {
+      color: var(--color-text-muted);
+      font-size: 1.0625rem;
+      margin-bottom: var(--space-md);
+    }
+    .final-cta__actions {
+      display: flex;
+      gap: var(--space-sm);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- Footer ---------- */
+    .site-footer {
+      padding: var(--space-md) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+    }
+    .site-footer a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: var(--font-display);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn--primary {
+      background: var(--color-accent);
+      color: var(--color-bg);
+    }
+    .btn--primary:hover {
+      background: #86efac;
+      transform: translateY(-1px);
+    }
+    .btn--ghost {
+      background: transparent;
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+    .btn--ghost:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* ---------- Animations ---------- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero__eyebrow, .hero__title, .hero__subtitle, .hero__cta {
+        animation: none;
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="site-nav">
+    <div class="container">
+      <a href="#" class="site-nav__brand">tril</a>
+      <div class="site-nav__links">
+        <a href="#how">How it works</a>
+        <a href="#results">Results</a>
+        <a href="#philosophy">Why</a>
+        <a href="https://github.com/sliday/tril" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__eyebrow">Ship of Theseus for code</div>
+      <h1 class="hero__title">Code is just<br><em>compressed language.</em></h1>
+      <p class="hero__subtitle">Tril converts any codebase into plain English that an LLM can execute. Replace every function with human-readable instructions. The app still works.</p>
+      <div class="hero__cta">
+        <a href="https://github.com/sliday/tril" class="btn btn--primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+        <a href="#how" class="btn btn--ghost">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before / After -->
+  <section class="comparison">
+    <div class="container">
+      <div class="comparison__header">
+        <h2>Before and after</h2>
+        <p>Same function. One a machine reads. The other, anyone reads.</p>
+      </div>
+
+      <div class="comparison__grid">
+        <!-- Before -->
+        <div class="comparison__pane">
+          <div class="comparison__pane-header">
+            <div class="dot dot--red"></div>
+            <div class="dot dot--yellow"></div>
+            <div class="dot dot--green"></div>
+            <span>converter.js</span>
+          </div>
+          <div class="comparison__code">
+<span class="kw">function</span> <span class="fn">celsiusToFahrenheit</span>(value) {
+  <span class="kw">const</span> n = <span class="fn">Number</span>(value);
+  <span class="kw">return</span> n * <span class="num">9</span> / <span class="num">5</span> + <span class="num">32</span>;
+}
+          </div>
+        </div>
+
+        <div class="comparison__arrow">
+          <i data-lucide="arrow-down"></i>
+        </div>
+
+        <!-- After -->
+        <div class="comparison__pane">
+          <div class="comparison__pane-header">
+            <div class="dot dot--red"></div>
+            <div class="dot dot--yellow"></div>
+            <div class="dot dot--green"></div>
+            <span>converter.md</span>
+          </div>
+          <div class="comparison__code">
+<span class="h2">## celsiusToFahrenheit</span>
+
+<span class="bold">**Purpose:**</span> <span class="muted">Convert temperature from
+Celsius to Fahrenheit.</span>
+
+<span class="bold">**Behaviour:**</span>
+<span class="muted">1. Multiply value by 9/5</span>
+<span class="muted">2. Add 32 to the result</span>
+
+<span class="bold">**Edge cases:**</span>
+<span class="muted">- Non-numeric input returns NaN</span>
+<span class="muted">- null coerces to 0, returns 32</span>
+<span class="muted">- -40&#176;C equals -40&#176;F</span>
+
+<span class="bold">**Examples:**</span>
+<span class="muted">- 0 &#8594; 32 &nbsp; | &nbsp; 100 &#8594; 212 &nbsp; | &nbsp; -40 &#8594; -40</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="results" id="results">
+    <div class="container">
+      <div class="results__header">
+        <h2>Identical results</h2>
+        <p>Original JavaScript vs. natural language executed by Claude. Same inputs, same outputs.</p>
+      </div>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Original (JS)</th>
+            <th>Tril (LLM)</th>
+            <th>Match</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>100&#176;C &#8594; &#176;F</td><td>212</td><td>212</td><td class="match">YES</td></tr>
+          <tr><td>32&#176;F &#8594; &#176;C</td><td>0</td><td>0</td><td class="match">YES</td></tr>
+          <tr><td>1 km &#8594; mi</td><td>0.621371</td><td>0.621371</td><td class="match">YES</td></tr>
+          <tr><td>1 kg &#8594; lbs</td><td>2.20462</td><td>2.20462</td><td class="match">YES</td></tr>
+          <tr><td>-40&#176;C &#8594; &#176;F</td><td>-40</td><td>-40</td><td class="match">YES</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="how__header">
+        <h2>Two commands</h2>
+        <p>Convert a repo. Run the result. That's it.</p>
+      </div>
+      <div class="how__steps">
+        <div class="how__step">
+          <div class="how__step-number">01 &mdash; Convert</div>
+          <h3>Code becomes prose</h3>
+          <p>Scans your repository, extracts every function, and translates each into structured English with types, edge cases, and examples. Static files copied as-is.</p>
+          <p style="margin-top: var(--space-sm);"><code>tril convert ./my-app</code></p>
+        </div>
+        <div class="how__step">
+          <div class="how__step-number">02 &mdash; Run</div>
+          <h3>Prose becomes program</h3>
+          <p>Reads the <code>.md</code> files, starts an HTTP server, and routes every request through <code>claude&nbsp;-p</code>. The LLM reads the instruction and returns the result.</p>
+          <p style="margin-top: var(--space-sm);"><code>tril run ./my-app-tril</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="philosophy" id="philosophy">
+    <div class="container">
+      <div class="philosophy__content">
+        <h2>Why this exists</h2>
+        <blockquote>Programming languages exist out of necessity. We invented them because machines couldn't understand our intentions.</blockquote>
+        <p>Machines used to understand only 0 and 1. Now they speak every human language simultaneously. <strong>JavaScript, Python, Rust &mdash; they're all bridges</strong> across the gap between "I want" and "here's the result."</p>
+        <p>Code is compressed human language with all ambiguity removed. Tril does the reverse: <strong>decompresses it back into plain English.</strong> No need to know about the semicolon that haunted you in college.</p>
+        <p>A pull request in a Tril repository isn't a cryptic diff. <strong>It's an editorial correction of ordinary text.</strong> Code review becomes just review: <em>"It says 'multiply by 9/5' &mdash; maybe 'multiply by 1.8' would be clearer?"</em></p>
+        <p>The barrier between those who write software and those who use it begins to dissolve.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="container">
+      <h2>The ship sails</h2>
+      <p>Try it on your own codebase. See what happens when code becomes a story.</p>
+      <div class="final-cta__actions">
+        <a href="https://github.com/sliday/tril" class="btn btn--primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Get started on GitHub
+        </a>
+        <a href="https://github.com/sliday/tril/tree/main/examples" class="btn btn--ghost">Browse examples</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>Inspired by the Babel fish from <em>The Hitchhiker's Guide to the Galaxy</em>. Built by <a href="https://github.com/sliday" target="_blank" rel="noopener">@sliday</a>.</p>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

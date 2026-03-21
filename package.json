@@ -1,16 +1,42 @@
 {
-  "name": "trillian",
+  "name": "@sliday/tril",
   "version": "0.1.0",
-  "description": "Convert code repos into natural language programs executable by LLMs",
+  "description": "Convert any codebase into plain English that an LLM can execute",
   "bin": {
-    "tril": "./src/cli.js"
+    "tril": "src/cli.js"
   },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node --test examples/unit-converter/test/converter.test.js"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "natural-language",
+    "code-converter",
+    "claude",
+    "ship-of-theseus",
+    "markdown"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sliday/tril.git"
+  },
+  "homepage": "https://tril.cc",
+  "author": "Stas Kulesh <stas@sliday.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "commander": "^12.0.0",
     "express": "^4.21.0"
-  },
-  "license": "MIT"
+  }
 }

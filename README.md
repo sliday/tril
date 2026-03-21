@@ -1,8 +1,14 @@
 # Tril
 
+[![npm](https://img.shields.io/npm/v/@sliday/tril)](https://www.npmjs.com/package/@sliday/tril)
+
 **Convert any codebase into plain English that an LLM can execute.**
 
 Inspired by the Babel fish from *The Hitchhiker's Guide to the Galaxy*. Website: [tril.cc](https://tril.cc)
+
+```bash
+npx @sliday/tril convert https://github.com/your/repo
+```
 
 ---
 
@@ -122,18 +128,17 @@ That's it. One instruction that does everything. The `claude` CLI is the virtual
 ## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/sliday/tril.git
-cd tril && npm install
+# Convert any GitHub repo (no install needed)
+npx @sliday/tril convert https://github.com/sliday/stupid-ai-coder
 
-# Run the demo app (original JS)
-cd examples/unit-converter && npm install && npm test
+# Or install globally
+npm i -g @sliday/tril
 
-# Convert it to natural language
-node src/cli.js convert examples/unit-converter --output /tmp/unit-converter-tril
+# Convert a local project
+tril convert ./my-app
 
 # Run the converted version
-node src/cli.js run /tmp/unit-converter-tril --port 3001
+tril run ./my-app-tril --port 3001
 
 # Test it
 curl -X POST http://localhost:3001/convert \

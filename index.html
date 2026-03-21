@@ -544,6 +544,21 @@ Celsius to Fahrenheit.</span>
     </div>
   </section>
 
+  <!-- Philosophy -->
+  <section class="philosophy" id="philosophy">
+    <div class="container">
+      <div class="philosophy__content">
+        <h2>Why this exists</h2>
+        <blockquote>Programming languages exist out of necessity. We invented them because machines couldn't understand our intentions. What if they can now?</blockquote>
+        <p>Think about it. We gritted our teeth, invented formal languages, memorized syntax rules, fought with compilers over missing semicolons &mdash; all because silicon couldn't understand <em>"just add these two numbers."</em> So we wrote <code>return a + b;</code> instead. That was the deal.</p>
+        <p>The deal has changed. <strong>Machines now speak every human language better than most humans.</strong> The legendary creator of AlphaFold and a growing list of senior engineers publicly admit they haven't opened an IDE in months. The gap between "I want" and "here's the result" is collapsing.</p>
+        <p>JavaScript, Python, Rust &mdash; they're all compression algorithms. They take human intent and squeeze out every drop of ambiguity until a CPU can execute it. <strong>Code is compressed human language.</strong> Tril does the reverse: decompresses it back into plain English that an LLM can execute.</p>
+        <p>A pull request in a Tril repo isn't a cryptic diff in syntax described in books with black-and-white animals on the cover. <strong>It's an editorial correction of ordinary text.</strong> Code review becomes just review: <em>"It says 'multiply by 9/5' &mdash; maybe 'multiply by 1.8' would be clearer?"</em> Your product manager can read it. Your designer can review it. Your client can suggest changes.</p>
+        <p>The barrier between those who write software and those who use it isn't thinning. <strong>It's dissolving.</strong></p>
+      </div>
+    </div>
+  </section>
+
   <!-- Results -->
   <section class="results" id="results">
     <div class="container">
@@ -595,40 +610,26 @@ Celsius to Fahrenheit.</span>
     </div>
   </section>
 
-  <!-- Philosophy -->
-  <section class="philosophy" id="philosophy">
-    <div class="container">
-      <div class="philosophy__content">
-        <h2>Why this exists</h2>
-        <blockquote>Programming languages exist out of necessity. We invented them because machines couldn't understand our intentions.</blockquote>
-        <p>Machines used to understand only 0 and 1. Now they speak every human language simultaneously. <strong>JavaScript, Python, Rust &mdash; they're all bridges</strong> across the gap between "I want" and "here's the result."</p>
-        <p>Code is compressed human language with all ambiguity removed. Tril does the reverse: <strong>decompresses it back into plain English.</strong> No need to know about the semicolon that haunted you in college.</p>
-        <p>A pull request in a Tril repository isn't a cryptic diff. <strong>It's an editorial correction of ordinary text.</strong> Code review becomes just review: <em>"It says 'multiply by 9/5' &mdash; maybe 'multiply by 1.8' would be clearer?"</em></p>
-        <p>The barrier between those who write software and those who use it begins to dissolve.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- Final CTA -->
   <section class="final-cta">
     <div class="container">
       <h2>The ship sails</h2>
-      <p>Try it on your own codebase. See what happens when code becomes a story.</p>
+      <p>This is an open experiment. Fork it. Break it. Convert your own codebase and tell us what happened.</p>
       <div class="final-cta__actions">
         <a href="https://github.com/sliday/tril" class="btn btn--primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          Get started on GitHub
+          Star &amp; fork on GitHub
         </a>
+        <a href="https://github.com/sliday/tril/issues" class="btn btn--ghost">Open an issue</a>
         <a href="https://github.com/sliday/tril/tree/main/examples" class="btn btn--ghost">Browse examples</a>
       </div>
+      <p style="margin-top: var(--space-md); font-size: 0.875rem;">Contributions welcome: add language support, improve the runtime, convert interesting repos, write tests. PRs are English diffs now.</p>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container">
-      <p>Inspired by the Babel fish from <em>The Hitchhiker's Guide to the Galaxy</em>. Built by <a href="https://github.com/sliday" target="_blank" rel="noopener">@sliday</a>.</p>
-    </div>
+  <footer style="text-align:center; padding:8px; background:var(--color-surface); color:var(--color-text-muted); margin-top:16px; font-family:var(--font-display); font-size:0.75rem;">
+    Made by <a href="https://x.com/staskulesh" target="_blank" rel="noopener" style="color:var(--color-accent); text-decoration:none;">@staskulesh</a> <a href="https://aichess.co/static/easter-egg/index.html" title="&#127875;" style="text-decoration: none; display: inline-block; transition: transform 0.2s; transform: scale(1);" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">&#x1F407;</a>
   </footer>
 
   <script>lucide.createIcons();</script>

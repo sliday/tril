@@ -1,0 +1,12 @@
+{
+  "name": "unit-converter",
+  "entry": "server.md",
+  "static": [
+    "public/"
+  ],
+  "modules": [
+    "converter.md",
+    "server.md"
+  ],
+  "port": 3000
+}

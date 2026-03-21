@@ -1,0 +1,16 @@
+{
+  "name": "trillian",
+  "version": "0.1.0",
+  "description": "Convert code repos into natural language programs executable by LLMs",
+  "bin": {
+    "tril": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test examples/unit-converter/test/converter.test.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "express": "^4.21.0"
+  },
+  "license": "MIT"
+}

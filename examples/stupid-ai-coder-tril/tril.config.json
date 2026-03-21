@@ -1,0 +1,9 @@
+{
+  "name": "stupid-ai-coder-2",
+  "entry": "stupid-ai-coder.md",
+  "static": [],
+  "modules": [
+    "stupid-ai-coder.md"
+  ],
+  "port": 3000
+}

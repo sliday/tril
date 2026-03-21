@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit Converter</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; padding: 0 20px; }
+    h1 { font-size: 1.5rem; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input, select, button { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 1rem; }
+    button { margin-top: 16px; cursor: pointer; background: #111; color: #fff; border: none; border-radius: 4px; }
+    button:hover { background: #333; }
+    #result { margin-top: 20px; padding: 16px; background: #f5f5f5; border-radius: 4px; font-size: 1.25rem; text-align: center; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Unit Converter</h1>
+  <label>Value <input type="number" id="value" placeholder="100"></label>
+  <label>From
+    <select id="from">
+      <option value="celsius">Celsius</option>
+      <option value="fahrenheit">Fahrenheit</option>
+      <option value="km">Kilometers</option>
+      <option value="miles">Miles</option>
+      <option value="kg">Kilograms</option>
+      <option value="lbs">Pounds</option>
+    </select>
+  </label>
+  <label>To
+    <select id="to">
+      <option value="fahrenheit">Fahrenheit</option>
+      <option value="celsius">Celsius</option>
+      <option value="miles">Miles</option>
+      <option value="km">Kilometers</option>
+      <option value="lbs">Pounds</option>
+      <option value="kg">Kilograms</option>
+    </select>
+  </label>
+  <button onclick="doConvert()">Convert</button>
+  <div id="result"></div>
+  <script>
+    async function doConvert() {
+      const value = document.getElementById('value').value;
+      const from = document.getElementById('from').value;
+      const to = document.getElementById('to').value;
+      const res = await fetch('/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: Number(value), from, to }),
+      });
+      const data = await res.json();
+      const el = document.getElementById('result');
+      el.style.display = 'block';
+      if (data.error) {
+        el.textContent = data.error;
+      } else {
+        el.textContent = `${value} ${from} = ${parseFloat(data.value.toFixed(4))} ${to}`;
+      }
+    }
+  </script>
+</body>
+</html>

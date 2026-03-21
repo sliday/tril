@@ -1,0 +1,13 @@
+{
+  "name": "unit-converter",
+  "version": "1.0.0",
+  "description": "Simple unit converter web app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/converter.test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

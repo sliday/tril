@@ -83,10 +83,17 @@ The ship sails.
 ### Convert
 
 ```bash
+# Local directory
 tril convert ./my-app --output ./my-app-tril
+
+# Remote GitHub repo
+tril convert https://github.com/user/repo
+
+# Keep the cloned source for inspection
+tril convert https://github.com/user/repo --keep
 ```
 
-Scans the source directory, extracts every function, sends each to Claude for natural language translation. Outputs `.md` files with YAML frontmatter preserving the project structure. Static files (HTML, CSS) are copied as-is.
+Scans the source (local or remote), extracts every function, sends each to Claude for natural language translation. Outputs `.md` files with YAML frontmatter preserving the project structure. Static files (HTML, CSS) are copied as-is.
 
 Supports JavaScript and Python.
 

@@ -1,0 +1,9 @@
+{
+  "name": "tril-textpress-1774105911585",
+  "entry": "textpress.md",
+  "static": [],
+  "modules": [
+    "textpress.md"
+  ],
+  "port": 3000
+}

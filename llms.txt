@@ -1,0 +1,30 @@
+# Tril
+
+> Convert any codebase into plain English that an LLM can execute.
+
+Tril is a CLI tool that transforms code repositories into natural language programs. It replaces every function with structured English descriptions — Purpose, Inputs, Behaviour, Output, Edge cases, Examples — that an LLM can execute via `claude -p`.
+
+## Commands
+
+- `tril convert <source>` — Convert a local directory or GitHub URL into `.md` files
+- `tril run <dir>` — Run a converted natural language program via LLM
+
+## How It Works
+
+1. **Convert**: Scans source code (JS/Python), extracts functions, translates each to structured English via Claude
+2. **Run**: Reads `.md` files, starts HTTP server, routes business logic through `claude -p`
+
+## Key Concept
+
+Code is compressed human language. Tril decompresses it. The converted repo is plain markdown — readable by anyone, renderable on GitHub, and executable by an LLM.
+
+## Links
+
+- Website: https://tril.cc
+- Repository: https://github.com/sliday/tril
+- Examples: https://github.com/sliday/tril/tree/main/examples
+
+## Requirements
+
+- Claude Code CLI installed and authenticated
+- Node.js 18+

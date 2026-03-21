@@ -150,6 +150,7 @@ curl -X POST http://localhost:3001/convert \
 ### Converted apps (after conversion)
 - [`examples/unit-converter-tril/`](examples/unit-converter-tril/) — Unit converter as natural language
 - [`examples/stupid-ai-coder-tril/`](examples/stupid-ai-coder-tril/) — [sliday/stupid-ai-coder](https://github.com/sliday/stupid-ai-coder) (625 lines Python → 705 lines English)
+- [`examples/textpress-tril/`](examples/textpress-tril/) — [sliday/textpress](https://github.com/sliday/textpress) (Python → 768 lines English)
 
 ## Requirements
 

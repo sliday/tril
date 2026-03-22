@@ -26,8 +26,15 @@ program
   .option('-o, --output <dir>', 'Output directory (default: <source>-tril)')
   .option('-m, --model <model>', 'LLM model for conversion', 'sonnet')
   .option('--keep', 'Keep cloned source (when converting a remote repo)')
+  .option('-s, --single', 'Convert a single file instead of a whole repo')
   .action((source, opts) => {
-    const { convert } = require('./convert');
+    const { convert, convertSingleFile } = require('./convert');
+
+    if (opts.single) {
+      const output = opts.output ? path.resolve(opts.output) : undefined;
+      convertSingleFile(source, { output });
+      return;
+    }
 
     let sourceDir;
     let tmpDir;

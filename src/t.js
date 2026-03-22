@@ -10,8 +10,9 @@ function t(prompt, options = {}) {
   const {
     model = 'haiku',
     systemPrompt = SYSTEM_PROMPT,
-    timeout = 60000,
+    timeout = 120000,
     raw = false,
+    retries = 1,
   } = options;
 
   const args = [
@@ -25,24 +26,33 @@ function t(prompt, options = {}) {
     args.push('--system-prompt', systemPrompt);
   }
 
-  try {
-    const output = execFileSync('claude', args, {
-      timeout,
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const output = execFileSync('claude', args, {
+        timeout,
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
 
-    if (raw) return output;
+      if (raw) return output;
 
-    const parsed = JSON.parse(output);
-    if (parsed.is_error) {
-      throw new Error(`claude error: ${parsed.result}`);
+      const parsed = JSON.parse(output);
+      if (parsed.is_error) {
+        throw new Error(`claude error: ${parsed.result}`);
+      }
+      return parsed.result;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        const wait = (attempt + 1) * 3000;
+        console.log(`    Retry ${attempt + 1}/${retries} after ${wait / 1000}s...`);
+        execFileSync('sleep', [String(wait / 1000)]);
+      }
     }
-    return parsed.result;
-  } catch (err) {
-    if (err.killed) throw new Error(`t() timed out after ${timeout}ms`);
-    throw err;
   }
+  if (lastErr.killed) throw new Error(`t() timed out after ${retries + 1} attempts`);
+  throw lastErr;
 }
 
 function tFunction(description, input) {

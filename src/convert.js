@@ -170,17 +170,26 @@ Return ONLY the markdown description. No code fences around the whole response.`
   return t(prompt, { model: 'sonnet' });
 }
 
-function convertFile(filePath, outputDir) {
+function formatElapsed(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}m ${s % 60}s`;
+}
+
+function convertFile(filePath, outputDir, counters) {
   const source = fs.readFileSync(filePath, 'utf-8');
   const basename = path.basename(filePath, path.extname(filePath));
   const functions = extractFunctions(source, filePath);
   const deps = detectDependencies(source, filePath);
 
-  console.log(`  Converting ${filePath}: ${functions.length} functions found`);
+  console.log(`  Converting ${path.basename(filePath)}: ${functions.length} functions found`);
 
   const sections = [];
   for (const fn of functions) {
-    console.log(`    Converting ${fn.name}...`);
+    if (counters) counters.done++;
+    const elapsed = counters ? formatElapsed(Date.now() - counters.start) : '';
+    const progress = counters ? `[${counters.done}/${counters.total}]` : '';
+    console.log(`    ${progress} Converting ${fn.name}... (${elapsed})`);
     const description = convertFunction(fn, source.slice(0, 500));
     sections.push(description);
   }
@@ -259,6 +268,46 @@ Return ONLY the markdown. No code fences around the whole thing.`;
   return routes;
 }
 
+function convertSingleFile(filePath, options = {}) {
+  const { output } = options;
+  const resolved = path.resolve(filePath);
+  const basename = path.basename(resolved, path.extname(resolved));
+  const outputDir = output || path.dirname(resolved);
+  const outputPath = path.join(outputDir, `${basename}.md`);
+
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const source = fs.readFileSync(resolved, 'utf-8');
+  const functions = extractFunctions(source, resolved);
+
+  console.log(`Converting ${path.basename(resolved)}: ${functions.length} functions\n`);
+
+  const counters = { done: 0, total: functions.length, start: Date.now() };
+  const sections = [];
+  for (const fn of functions) {
+    counters.done++;
+    const elapsed = formatElapsed(Date.now() - counters.start);
+    console.log(`  [${counters.done}/${counters.total}] ${fn.name} (${elapsed})`);
+    sections.push(convertFunction(fn, source.slice(0, 500)));
+  }
+
+  const deps = detectDependencies(source, resolved);
+  const meta = [
+    '---',
+    `source: ${path.basename(resolved)}`,
+    `functions: [${functions.map(f => f.name).join(', ')}]`,
+    `dependencies: [${deps.join(', ')}]`,
+    '---',
+  ].join('\n');
+
+  const content = meta + `\n# ${basename}\n\n${sections.join('\n\n')}`;
+  fs.writeFileSync(outputPath, content);
+
+  const elapsed = formatElapsed(Date.now() - counters.start);
+  console.log(`\nDone in ${elapsed}. Output: ${outputPath}`);
+  return outputPath;
+}
+
 function convert(sourceDir, options = {}) {
   const { output } = options;
   const outputDir = output || `${sourceDir}-tril`;
@@ -276,11 +325,23 @@ function convert(sourceDir, options = {}) {
   const jsFiles = findSourceFiles(sourceDir);
   console.log(`Found ${jsFiles.length} source files: ${jsFiles.map(f => path.basename(f)).join(', ')}\n`);
 
+  // Count total functions across all files for progress
+  let totalFunctions = 0;
+  const fileFunctions = {};
+  for (const file of jsFiles) {
+    const source = fs.readFileSync(file, 'utf-8');
+    const fns = extractFunctions(source, file);
+    fileFunctions[file] = fns;
+    totalFunctions += fns.length;
+  }
+  console.log(`Total: ${totalFunctions} functions to convert\n`);
+
+  const counters = { done: 0, total: totalFunctions, start: Date.now() };
+
   // Detect server files (Express, Flask, FastAPI)
   const serverFile = jsFiles.find(f => {
     const name = path.basename(f);
     if (['server.js', 'app.js'].includes(name)) return true;
-    // Check file content for web framework patterns
     const content = fs.readFileSync(f, 'utf-8').slice(0, 2000);
     if (/app\.(get|post|put|delete|route)\s*\(/.test(content)) return true;
     if (/Flask\(|FastAPI\(|@app\.route/.test(content)) return true;
@@ -291,7 +352,7 @@ function convert(sourceDir, options = {}) {
   const allFunctions = [];
   const moduleFiles = [];
   for (const file of logicFiles) {
-    const result = convertFile(file, outputDir);
+    const result = convertFile(file, outputDir, counters);
     allFunctions.push(...result.functions);
     moduleFiles.push(`${result.basename}.md`);
   }
@@ -324,7 +385,8 @@ function convert(sourceDir, options = {}) {
   );
   console.log(`  Generated tril.config.json`);
 
-  console.log(`\nConversion complete. Run with: tril run ${outputDir}`);
+  const elapsed = formatElapsed(Date.now() - counters.start);
+  console.log(`\nConversion complete in ${elapsed}. Run with: tril run ${outputDir}`);
   return outputDir;
 }
 
@@ -358,4 +420,4 @@ function copyDir(src, dest) {
   }
 }
 
-module.exports = { convert, extractFunctions, detectRoutes, detectDependencies };
+module.exports = { convert, convertSingleFile, extractFunctions, detectRoutes, detectDependencies };

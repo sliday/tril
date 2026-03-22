@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { t } = require('./t');
+const { t, tAsync } = require('./t');
 
 function extractFunctions(source, filePath) {
   const ext = path.extname(filePath);
@@ -129,6 +129,16 @@ function detectRoutes(source) {
   return routes;
 }
 
+async function parallelMap(items, fn, concurrency = 3) {
+  const results = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
 function convertFunction(fnObj, sourceContext) {
   const prompt = `Convert this function to a natural language description.
 
@@ -167,7 +177,7 @@ ${sourceContext ? `Context from the file:\n${sourceContext}` : ''}
 
 Return ONLY the markdown description. No code fences around the whole response.`;
 
-  return t(prompt, { model: 'sonnet' });
+  return tAsync(prompt, { model: 'sonnet' });
 }
 
 function formatElapsed(ms) {
@@ -176,7 +186,7 @@ function formatElapsed(ms) {
   return `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
-function convertFile(filePath, outputDir, counters) {
+async function convertFile(filePath, outputDir, counters, concurrency = 3) {
   const source = fs.readFileSync(filePath, 'utf-8');
   const basename = path.basename(filePath, path.extname(filePath));
   const functions = extractFunctions(source, filePath);
@@ -184,15 +194,14 @@ function convertFile(filePath, outputDir, counters) {
 
   console.log(`  Converting ${path.basename(filePath)}: ${functions.length} functions found`);
 
-  const sections = [];
-  for (const fn of functions) {
+  const sourceContext = source.slice(0, 500);
+  const sections = await parallelMap(functions, async (fn) => {
     if (counters) counters.done++;
     const elapsed = counters ? formatElapsed(Date.now() - counters.start) : '';
     const progress = counters ? `[${counters.done}/${counters.total}]` : '';
     console.log(`    ${progress} Converting ${fn.name}... (${elapsed})`);
-    const description = convertFunction(fn, source.slice(0, 500));
-    sections.push(description);
-  }
+    return convertFunction(fn, sourceContext);
+  }, concurrency);
 
   const meta = [
     '---',
@@ -212,15 +221,14 @@ function convertFile(filePath, outputDir, counters) {
   return { basename, functions: functions.map(f => f.name), deps };
 }
 
-function convertServerFile(filePath, outputDir, allFunctions) {
+async function convertServerFile(filePath, outputDir, allFunctions, concurrency = 3) {
   const source = fs.readFileSync(filePath, 'utf-8');
   const routes = detectRoutes(source);
   const deps = detectDependencies(source, filePath);
 
-  console.log(`  Converting server ${filePath}: ${routes.length} routes found`);
+  console.log(`  Converting server ${path.basename(filePath)}: ${routes.length} routes found`);
 
-  const routeSections = [];
-  for (const route of routes) {
+  const routeSections = await parallelMap(routes, async (route) => {
     console.log(`    Describing route ${route.method.toUpperCase()} ${route.path}...`);
 
     const prompt = `Describe this Express.js route handler in natural language.
@@ -245,9 +253,8 @@ Use this format:
 
 Return ONLY the markdown. No code fences around the whole thing.`;
 
-    const description = t(prompt, { model: 'sonnet' });
-    routeSections.push(description);
-  }
+    return tAsync(prompt, { model: 'sonnet' });
+  }, concurrency);
 
   const meta = [
     '---',
@@ -268,7 +275,7 @@ Return ONLY the markdown. No code fences around the whole thing.`;
   return routes;
 }
 
-function convertSingleFile(filePath, options = {}) {
+async function convertSingleFile(filePath, options = {}) {
   const { output } = options;
   const resolved = path.resolve(filePath);
   const basename = path.basename(resolved, path.extname(resolved));
@@ -282,14 +289,15 @@ function convertSingleFile(filePath, options = {}) {
 
   console.log(`Converting ${path.basename(resolved)}: ${functions.length} functions\n`);
 
+  const concurrency = options.concurrency || 3;
   const counters = { done: 0, total: functions.length, start: Date.now() };
-  const sections = [];
-  for (const fn of functions) {
+  const sourceContext = source.slice(0, 500);
+  const sections = await parallelMap(functions, async (fn) => {
     counters.done++;
     const elapsed = formatElapsed(Date.now() - counters.start);
     console.log(`  [${counters.done}/${counters.total}] ${fn.name} (${elapsed})`);
-    sections.push(convertFunction(fn, source.slice(0, 500)));
-  }
+    return convertFunction(fn, sourceContext);
+  }, concurrency);
 
   const deps = detectDependencies(source, resolved);
   const meta = [
@@ -308,7 +316,7 @@ function convertSingleFile(filePath, options = {}) {
   return outputPath;
 }
 
-function convert(sourceDir, options = {}) {
+async function convert(sourceDir, options = {}) {
   const { output } = options;
   const outputDir = output || `${sourceDir}-tril`;
 
@@ -349,17 +357,18 @@ function convert(sourceDir, options = {}) {
   });
   const logicFiles = jsFiles.filter(f => f !== serverFile);
 
+  const concurrency = options.concurrency || 3;
   const allFunctions = [];
   const moduleFiles = [];
   for (const file of logicFiles) {
-    const result = convertFile(file, outputDir, counters);
+    const result = await convertFile(file, outputDir, counters, concurrency);
     allFunctions.push(...result.functions);
     moduleFiles.push(`${result.basename}.md`);
   }
 
   let routes = [];
   if (serverFile) {
-    routes = convertServerFile(serverFile, outputDir, allFunctions);
+    routes = await convertServerFile(serverFile, outputDir, allFunctions, concurrency);
     moduleFiles.push('server.md');
   }
 

@@ -1,4 +1,4 @@
-const { execFileSync } = require('child_process');
+const { execFileSync, execFile } = require('child_process');
 
 const SYSTEM_PROMPT = `You are a precise function executor. You receive a function description in natural language and input values. Execute the function exactly as described and return ONLY the raw result value. No explanation, no markdown, no formatting. Just the value.
 
@@ -60,4 +60,52 @@ function tFunction(description, input) {
   return t(prompt);
 }
 
-module.exports = { t, tFunction, SYSTEM_PROMPT };
+function tAsync(prompt, options = {}) {
+  const {
+    model = 'haiku',
+    systemPrompt = SYSTEM_PROMPT,
+    timeout = 120000,
+    retries = 1,
+  } = options;
+
+  const args = [
+    '-p', prompt,
+    '--output-format', 'json',
+    '--model', model,
+    '--no-session-persistence',
+  ];
+
+  if (systemPrompt) {
+    args.push('--system-prompt', systemPrompt);
+  }
+
+  function attempt(n) {
+    return new Promise((resolve, reject) => {
+      const child = execFile('claude', args, { timeout, encoding: 'utf-8' }, (err, stdout) => {
+        if (err) {
+          if (n < retries) {
+            const wait = (n + 1) * 3000;
+            setTimeout(() => attempt(n + 1).then(resolve, reject), wait);
+            return;
+          }
+          reject(err.killed ? new Error(`tAsync() timed out after ${retries + 1} attempts`) : err);
+          return;
+        }
+        try {
+          const parsed = JSON.parse(stdout);
+          if (parsed.is_error) {
+            reject(new Error(`claude error: ${parsed.result}`));
+            return;
+          }
+          resolve(parsed.result);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  }
+
+  return attempt(0);
+}
+
+module.exports = { t, tAsync, tFunction, SYSTEM_PROMPT };

@@ -27,12 +27,14 @@ program
   .option('-m, --model <model>', 'LLM model for conversion', 'sonnet')
   .option('--keep', 'Keep cloned source (when converting a remote repo)')
   .option('-s, --single', 'Convert a single file instead of a whole repo')
-  .action((source, opts) => {
+  .option('-c, --concurrency <n>', 'Number of parallel conversions', '3')
+  .action(async (source, opts) => {
     const { convert, convertSingleFile } = require('./convert');
+    const concurrency = parseInt(opts.concurrency) || 3;
 
     if (opts.single) {
       const output = opts.output ? path.resolve(opts.output) : undefined;
-      convertSingleFile(source, { output });
+      await convertSingleFile(source, { output, concurrency });
       return;
     }
 
@@ -56,7 +58,7 @@ program
       : (tmpDir ? path.resolve(`${repoNameFromUrl(source)}-tril`) : undefined);
 
     try {
-      convert(sourceDir, { output, model: opts.model });
+      await convert(sourceDir, { output, model: opts.model, concurrency });
     } finally {
       if (tmpDir && !opts.keep) {
         fs.rmSync(tmpDir, { recursive: true, force: true });

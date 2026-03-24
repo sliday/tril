@@ -7,7 +7,8 @@
 Inspired by the Babel fish from *The Hitchhiker's Guide to the Galaxy*. Website: [tril.cc](https://tril.cc)
 
 ```bash
-npx @sliday/tril convert https://github.com/your/repo
+npm i -g @sliday/tril
+tril convert https://github.com/your/repo
 ```
 
 ---
@@ -128,10 +129,7 @@ That's it. One instruction that does everything. The `claude` CLI is the virtual
 ## Quick Start
 
 ```bash
-# Convert any GitHub repo (no install needed)
-npx @sliday/tril convert https://github.com/sliday/stupid-ai-coder
-
-# Or install globally
+# Install globally
 npm i -g @sliday/tril
 
 # Convert a local project

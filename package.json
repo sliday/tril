@@ -1,9 +1,9 @@
 {
   "name": "@sliday/tril",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Convert any codebase into plain English that an LLM can execute",
   "bin": {
-    "tril": "src/cli.js"
+    "tril": "./src/cli.js"
   },
   "files": [
     "src/",

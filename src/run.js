@@ -7,8 +7,11 @@ const { loadConfig, loadModules, parseRoutes } = require('./parser');
 function buildFunctionRegistry(modules) {
   const registry = {};
   for (const [file, mod] of Object.entries(modules)) {
-    for (const [name, description] of Object.entries(mod.functions)) {
-      registry[name] = { description, file };
+    for (const [name, fnData] of Object.entries(mod.functions)) {
+      // fnData is { description, contract } from parser
+      const description = typeof fnData === 'string' ? fnData : fnData.description;
+      const contract = typeof fnData === 'object' ? fnData.contract : null;
+      registry[name] = { description, contract, file };
     }
   }
   return registry;
@@ -46,9 +49,22 @@ function run(dir, options = {}) {
 
     app[route.method](route.path, async (req, res) => {
       try {
-        // Build context: route description + all available functions
+        // Build context: route description + all available functions with contracts
         const functionDescriptions = Object.entries(registry)
-          .map(([name, { description }]) => description)
+          .map(([name, { description, contract }]) => {
+            let section = description;
+            if (contract) {
+              const contractLines = [];
+              for (const inp of contract.inputs) {
+                contractLines.push(`  input: ${inp.name} (${inp.type})`);
+              }
+              if (contract.output) {
+                contractLines.push(`  output: ${contract.output}`);
+              }
+              section += `\n\nContract:\n${contractLines.join('\n')}`;
+            }
+            return section;
+          })
           .join('\n\n');
 
         const input = {
@@ -64,7 +80,7 @@ function run(dir, options = {}) {
           `Available functions:\n\n${functionDescriptions}\n\n` +
           `Request data: ${JSON.stringify(input)}\n\n` +
           `Execute this route handler. Call the appropriate function(s) as described.\n` +
-          `Return the response as valid JSON. Only JSON, nothing else.`;
+          `Return the response matching the output contracts. Valid JSON only, nothing else.`;
 
         const result = tFunction(
           prompt,

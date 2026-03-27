@@ -146,6 +146,11 @@ Use this EXACT format:
 
 ## ${fnObj.name}
 
+**Contract:**
+- input: [param_name] ([type])
+- input: [param_name] ([type])
+- output: [type]
+
 **Purpose:** [one line description]
 
 **Inputs:**

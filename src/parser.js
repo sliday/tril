@@ -24,6 +24,24 @@ function parseFrontmatter(content) {
   return { meta, body };
 }
 
+function parseContract(text) {
+  const contract = { inputs: [], output: null };
+  const contractMatch = text.match(/\*\*Contract:\*\*\n([\s\S]*?)(?=\n\*\*|$)/);
+  if (!contractMatch) return null;
+
+  for (const line of contractMatch[1].split('\n')) {
+    const inputMatch = line.match(/^-\s*input:\s*(\w+)\s*\(([^)]+)\)/);
+    if (inputMatch) {
+      contract.inputs.push({ name: inputMatch[1], type: inputMatch[2].trim() });
+    }
+    const outputMatch = line.match(/^-\s*output:\s*(.+)/);
+    if (outputMatch) {
+      contract.output = outputMatch[1].trim();
+    }
+  }
+  return (contract.inputs.length || contract.output) ? contract : null;
+}
+
 function parseFunctions(body) {
   const functions = {};
   const sections = body.split(/\n## /);
@@ -35,7 +53,11 @@ function parseFunctions(body) {
     if (!name || name.startsWith('#')) continue;
     const description = lines.slice(1).join('\n').trim();
     if (description) {
-      functions[name] = `## ${name}\n\n${description}`;
+      const contract = parseContract(description);
+      functions[name] = {
+        description: `## ${name}\n\n${description}`,
+        contract,
+      };
     }
   }
 
@@ -91,6 +113,7 @@ function loadModules(dir, moduleFiles) {
 module.exports = {
   parseFrontmatter,
   parseFunctions,
+  parseContract,
   parseModule,
   parseRoutes,
   loadConfig,

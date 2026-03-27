@@ -64,8 +64,8 @@ function tAsync(prompt, options = {}) {
   const {
     model = 'haiku',
     systemPrompt = SYSTEM_PROMPT,
-    timeout = 120000,
-    retries = 1,
+    timeout = 180000,
+    retries = 2,
   } = options;
 
   const args = [

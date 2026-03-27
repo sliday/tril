@@ -1,14 +1,13 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { tFunction } = require('./t');
+const { t } = require('./t');
 const { loadConfig, loadModules, parseRoutes } = require('./parser');
 
 function buildFunctionRegistry(modules) {
   const registry = {};
   for (const [file, mod] of Object.entries(modules)) {
     for (const [name, fnData] of Object.entries(mod.functions)) {
-      // fnData is { description, contract } from parser
       const description = typeof fnData === 'string' ? fnData : fnData.description;
       const contract = typeof fnData === 'object' ? fnData.contract : null;
       registry[name] = { description, contract, file };
@@ -26,7 +25,6 @@ function run(dir, options = {}) {
   const app = express();
   app.use(express.json());
 
-  // Serve static directories
   for (const staticDir of (config.static || [])) {
     const staticPath = path.join(dir, staticDir);
     if (fs.existsSync(staticPath)) {
@@ -34,7 +32,6 @@ function run(dir, options = {}) {
     }
   }
 
-  // Find server module and parse routes
   const serverMd = modules[config.entry];
   if (!serverMd) {
     throw new Error(`Entry module ${config.entry} not found`);
@@ -49,7 +46,6 @@ function run(dir, options = {}) {
 
     app[route.method](route.path, async (req, res) => {
       try {
-        // Build context: route description + all available functions with contracts
         const functionDescriptions = Object.entries(registry)
           .map(([name, { description, contract }]) => {
             let section = description;
@@ -82,16 +78,11 @@ function run(dir, options = {}) {
           `Execute this route handler. Call the appropriate function(s) as described.\n` +
           `Return the response matching the output contracts. Valid JSON only, nothing else.`;
 
-        const result = tFunction(
-          prompt,
-          input,
-        );
+        const result = t(prompt);
 
-        // Strip markdown code fences if present
         let cleaned = result.trim();
         cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
 
-        // Try to parse as JSON, otherwise return as-is
         try {
           const json = JSON.parse(cleaned);
           res.json(json);
